@@ -1,0 +1,16 @@
+FROM ros:noetic-robot
+
+# SHELL ["/bin/bash", "-c"]
+
+RUN sudo apt-get update
+RUN sudo apt-get -y dist-upgrade
+# RUN sudo apt-get install ros-melodic-ros-tutorials
+
+# COPY ./src ./src
+RUN mkdir -p /catkin_ws/src
+WORKDIR /catkin_ws
+# COPY ./make.sh .
+# COPY ./manifest.xml .
+COPY . .
+
+CMD ["roscore"]

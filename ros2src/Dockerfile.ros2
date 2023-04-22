@@ -1,0 +1,31 @@
+FROM ros:humble
+
+
+RUN sudo apt-get update
+RUN sudo apt-get -y dist-upgrade
+# RUN sudo apt-get install ros-melodic-ros-tutorials
+RUN sudo apt install -y ros-humble-turtlesim & sudo apt install -y ~nros-humble-rqt*
+
+
+RUN echo "source /opt/ros/humble/setup.bash" > ~/.bashrc
+# RUN rm /bin/sh
+RUN ln -snf /bin/bash /bin/sh
+# RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+# SHELL ["/bin/bash", "-c"]
+# RUN ln -sf /bin/bash /bin/sh
+# RUN sh -c 'clear; (bash || ash || sh)'
+
+SHELL ["/bin/bash", "-c", "source /opt/ros/humble/setup.bash"]
+
+# RUN "source /opt/ros/humble/setup.bash"
+
+RUN ros2 pkg executables turtlesim
+
+# # COPY ./src ./src
+# RUN mkdir -p /catkin_ws/src
+# WORKDIR /catkin_ws
+# # COPY ./make.sh .
+# # COPY ./manifest.xml .
+# COPY . .
+
+CMD ["rqt"]
