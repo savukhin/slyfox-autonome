@@ -9,3 +9,5 @@ colcon build --event-handlers desktop_notification- status- --cmake-args -DCMAKE
 
 
 
+MAKEFLAGS="-j1 -l1" colcon build --symlink-install --merge-install --event-handlers desktop_notification- --cmake-args -DCMAKE_BUILD_TYPE=Release --executor sequential --parallel-workers 1
+

@@ -1,3 +1,4 @@
+. /opt/ros/humble/setup.sh
 . install/local_setup.sh
 
 ros2 run multiwii_node multiwii_node --ros-args \
