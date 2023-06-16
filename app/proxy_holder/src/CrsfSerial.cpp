@@ -205,8 +205,8 @@ void CrsfSerial::packetGps(const crsf_header_t *p)
     _gpsSensor.altitude = be16toh(gps->altitude);
     _gpsSensor.satellites = gps->satellites;
 
-    if (onPacketGps)
-        onPacketGps(&_gpsSensor);
+    if (this->onPacketGps)
+        this->onPacketGps(&_gpsSensor);
 }
 
 // uint8_t* CrsfSerial::queuePacket(uint8_t addr, uint8_t type, const void *payload, uint8_t len)

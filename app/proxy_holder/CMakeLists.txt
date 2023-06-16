@@ -1,6 +1,7 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.5)
 project(proxy_holder)
 
+# Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
 endif()
@@ -9,99 +10,74 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
-
-string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
-if (${uppercase_CMAKE_BUILD_TYPE} STREQUAL "RELEASE")
-    message(STATUS "Create Release Build.")
-    set(CMAKE_CXX_FLAGS "-O2 ${CMAKE_CXX_FLAGS}")
-else()
-    message(STATUS "Create Debug Build.")
-endif()
-
-
-# find dependencies
+# Find packages
 find_package(ament_cmake REQUIRED)
 find_package(action_tutorials_interfaces REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_msgs REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_components REQUIRED)
 
+
+set(dependencies
+  rclcpp
+  std_msgs
+  tf2_msgs
+  tf2_geometry_msgs
+)
+
+set(SOURCES
+  src/PID.cpp
+  src/serialib.cpp
+  src/CrsfSerial.cpp
+)
+
+# Include our own headers
 include_directories(include)
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
-
-# add_executable(proxy_holder_node
-#   src/proxy_holder_node.cpp)
-
-# ament_target_dependencies(proxy_holder_node
-#   "rclcpp"
-# )
-
-# install(TARGETS
-# proxy_holder_node
-# DESTINATION lib/${PROJECT_NAME})
-
-# add_library(${PROJECT_NAME} SHARED
-#   src/proxy_holder_node.cpp)
-# target_include_directories(${PROJECT_NAME} PRIVATE
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#   $<INSTALL_INTERFACE:include>)
-# target_compile_definitions(${PROJECT_NAME}
-#   PRIVATE "PROXY_HOLDER_CPP_BUILDING_DLL")
-# ament_target_dependencies(${PROJECT_NAME}
-#   "rclcpp"
-#   "sensor_msgs"
-#   "tf2"
-# )
-
-
-# # install(
-# #   DIRECTORY lib/
-# #   DESTINATION lib
-# # )
-# rclcpp_components_register_node(${PROJECT_NAME} PLUGIN "proxy_holder::ProxyHolderNode" EXECUTABLE proxy_holder_node)
-# install(
-#   DIRECTORY src/
-#   DESTINATION src
-# )
-
-# install(TARGETS
-# ${PROJECT_NAME}
-#   ARCHIVE DESTINATION lib
-#   LIBRARY DESTINATION lib
-#   RUNTIME DESTINATION bin
-# )
-
-# ament_export_libraries(${PROJECT_NAME})
-
-add_executable(proxy_holder_node 
-  src/proxy_holder_node.cpp
+add_library(my_library SHARED ${SOURCES})
+ament_target_dependencies(my_library 
+  ${dependencies}
 )
-ament_target_dependencies(proxy_holder_node rclcpp std_msgs tf2_msgs)
 
-install(TARGETS
-  proxy_holder_node
-  DESTINATION lib/${PROJECT_NAME}
+rclcpp_components_register_nodes(my_library
+  PLUGIN "ProxyHolderNode"
+  EXECUTABLE proxy_holder_node
+)
+
+# Create a node
+add_executable(my_node src/main.cpp)
+target_link_libraries(my_node my_library)
+
+ament_target_dependencies(my_node
+  ${dependencies}
 )
 
 
+# Install our headers
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
+# Install our node and library
+install(TARGETS my_library my_node 
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+
+# Tell downstream packages where to find our headers
+ament_export_include_directories(include)
+# Tell downstream packages our libraries to link against
+ament_export_libraries(my_library)
+# Help downstream packages to find transitive dependencies
+ament_export_dependencies(
+  ${dependencies}
+)
 ament_package()

@@ -6,11 +6,8 @@ template <class T>
 class PIDController
 {
 public:
-    PIDController();
-    PIDController(double p, double i, double d, std::function<T()> pidSource, std::function<void(T output)> pidOutput);
-    T tick();
-    void setTarget(T t);
-    T getTarget();
+    PIDController(double p=1, double i=1, double d=1);
+    T tick(T currentFeedback, T target);
     T getOutput();
     T getFeedback();
     T getError();
@@ -46,15 +43,12 @@ public:
     double getP();
     double getI();
     double getD();
-    void setPIDSource(T (*pidSource)());
-    void setPIDOutput(void (*pidOutput)(T output));
     void registerTimeFunction(unsigned long (*getSystemTime)());
 
 private:
     double _p;
     double _i;
     double _d;
-    T target;
     T output;
     bool enabled;
     T currentFeedback;
@@ -78,9 +72,7 @@ private:
     T feedbackWrapUpperBound;
 
     bool timeFunctionRegistered;
-    std::function<T()> _pidSource;
-    std::function<void(T output)> _pidOutput;
     unsigned long (*_getSystemTime)();
 };
 
-#include "PID.cpp"
+// #include "PID.cpp"

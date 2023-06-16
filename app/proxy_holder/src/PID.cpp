@@ -68,12 +68,11 @@
  * @param (*pidOutput) The function pointer for delivering system output.
  */
 template <class T>
-PIDController<T>::PIDController(double p, double i, double d, std::function<T()> pidSource, std::function<void(T output)> pidOutput)
+PIDController<T>::PIDController(double p, double i, double d)
 {
     _p = p;
     _i = i;
     _d = d;
-    target = 0;
     output = 0;
     enabled = true;
     currentFeedback = 0;
@@ -95,9 +94,6 @@ PIDController<T>::PIDController(double p, double i, double d, std::function<T()>
     feedbackWrapped = false;
 
     timeFunctionRegistered = false;
-
-    _pidSource.swap(pidSource);
-    _pidOutput.swap(pidOutput);
 }
 
 /**
@@ -128,9 +124,8 @@ PIDController<T>::PIDController(double p, double i, double d, std::function<T()>
  * ```
  */
 template <class T>
-T PIDController<T>::tick()
+T PIDController<T>::tick(T currentFeedback, T target)
 {
-    currentFeedback = _pidSource();
     if (enabled)
     {
         // Retrieve system feedback from user callback.
@@ -245,30 +240,9 @@ T PIDController<T>::tick()
                 output = outputLowerBound;
         }
 
-        _pidOutput(output);
+        return output;
     }
     return currentFeedback;
-}
-
-/**
- * Sets the target of this PIDController.  This system will generate
- * correction outputs indended to guide the feedback variable (such
- * as position, velocity, etc.) toward the established target.
- */
-template <class T>
-void PIDController<T>::setTarget(T t)
-{
-    target = t;
-}
-
-/**
- * Returns the current target of this PIDController.
- * @return The current target of this PIDController.
- */
-template <class T>
-T PIDController<T>::getTarget()
-{
-    return target;
 }
 
 /**
@@ -654,50 +628,6 @@ template <class T>
 double PIDController<T>::getD()
 {
     return _d;
-}
-
-/**
- * Sets the function pointer to the PID Source.  A PID Source
- * is a function which returns a value to be used as the PIDController's
- * control feedback.  This value can be a reading from a sensor or other
- * data source that contains information regarding the system's actual
- * state.
- * Below is an example of using a PIDSource:
- *
- *    int pidSource()
- *    {
- *        return mySensor.getValue();
- *    }
- *    myPIDController.setPIDSource(pidSource);
- *
- * @param (*getFeedback) A function pointer that retrieves system feedback.
- */
-template <class T>
-void PIDController<T>::setPIDSource(T (*pidSource)())
-{
-    _pidSource = pidSource;
-}
-
-/**
- * Sets the function pointer to the PID Output.  A PID Output
- * is a function which delivers a value to the parent system in order to guide
- * the system based on the PID loop's result.  This value can be delivered
- * directly to motors, to a variable that directs steering, or other means of
- * influencing the system.
- * Below is an example of using a PIDOutput:
- *
- *    void pidOutput(int output)
- *    {
- *        myMotor.write(output);
- *    }
- *    myPIDController.setPIDOutput(pidOutput);
- *
- * @param (*onUpdate) A function pointer that delivers system output.
- */
-template <class T>
-void PIDController<T>::setPIDOutput(void (*pidOutput)(T output))
-{
-    _pidOutput = pidOutput;
 }
 
 /**

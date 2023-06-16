@@ -3,6 +3,7 @@
 #include "crc8.hpp"
 #include "CrsfProtocol.hpp"
 
+#include <functional>
 #include <vector>
 
 enum eFailsafeAction { fsaNoPulses, fsaHold };
@@ -62,5 +63,3 @@ private:
     void packetLinkStatistics(const crsf_header_t *p);
     void packetGps(const crsf_header_t *p);
 };
-
-#include "CrsfSerial.cpp"
