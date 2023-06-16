@@ -31,9 +31,7 @@ public:
         return values;
     }
 
-    void WriteBytes(const void *b, const uint size) override {
-        b = b;
-        auto q = size;
+    void WriteBytes(const void *, const uint) override {
     };
 };
 

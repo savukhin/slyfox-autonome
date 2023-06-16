@@ -185,6 +185,10 @@ public:
     std::string fcu_serial = this->declare_parameter("fcu_serial", "/dev/USB1");
     uint fcu_serial_baud = this->declare_parameter<int>("fcu_serial_baud", 115200);
 
+    RCLCPP_INFO(this->get_logger(), std::string("rx_serial = " + rx_serial).c_str());
+    RCLCPP_INFO(this->get_logger(), std::string("fcu_serial = " + fcu_serial).c_str());
+
+
     if (rx_serial_type != "dummy" && rx_serial_type != "usb") {
       const char* msg = "rx_serial_type type must be \"dummy\" or \"usb\"";
       RCLCPP_ERROR(this->get_logger(), msg);

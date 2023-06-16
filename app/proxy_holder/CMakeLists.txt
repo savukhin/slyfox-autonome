@@ -46,14 +46,14 @@ ament_target_dependencies(my_library
 
 rclcpp_components_register_nodes(my_library
   PLUGIN "ProxyHolderNode"
-  EXECUTABLE proxy_holder_node
+  EXECUTABLE proxy_holder_node_
 )
 
 # Create a node
-add_executable(my_node src/main.cpp)
-target_link_libraries(my_node my_library)
+add_executable(proxy_holder_node src/main.cpp)
+target_link_libraries(proxy_holder_node my_library)
 
-ament_target_dependencies(my_node
+ament_target_dependencies(proxy_holder_node
   ${dependencies}
 )
 
@@ -65,10 +65,16 @@ install(
 )
 
 # Install our node and library
-install(TARGETS my_library my_node 
+install(TARGETS my_library proxy_holder_node 
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+# Install launch files
+install(DIRECTORY 
+    launch
+    DESTINATION share/${PROJECT_NAME}
 )
 
 
