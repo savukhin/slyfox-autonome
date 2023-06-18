@@ -9,18 +9,34 @@ from launch_ros.actions import Node
 
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
+proxy_holder_params = [
+    {'name': 'rx_serial_type',                  'default': 'usb', 'description': 'dummy or usb - type of RX serial'},
+    {'name': 'rx_serial',                  'default': '/dev/USB0', 'description': 'path to RX serial if USB'},
+    {'name': 'rx_serial_baud',                  'default': '115200', 'description': 'RX serial baud rate if USB'},
+    {'name': 'fcu_serial_type',                  'default': 'usb', 'description': 'dummy or usb - type of FCU serial'},
+    {'name': 'fcu_serial',                  'default': '/dev/USB0', 'description': 'path to FCU serial if USB'},
+    {'name': 'fcu_serial_baud',                  'default': '115200', 'description': 'FCU serial baud rate if USBl'},
+
+    {'name': 'pid_p_throttle',                  'default': '1.0', 'description': 'P of throttle PID'},
+    {'name': 'pid_i_throttle',                  'default': '1.0', 'description': 'I of throttle PID'},
+    {'name': 'pid_d_throttle',                  'default': '1.0', 'description': 'D of throttle PID'},
+    {'name': 'pid_p_pitch',                  'default': '1.0', 'description': 'P of pitch PID'},
+    {'name': 'pid_i_pitch',                  'default': '1.0', 'description': 'I of pitch PID'},
+    {'name': 'pid_d_pitch',                  'default': '1.0', 'description': 'D of pitch PID'},
+    {'name': 'pid_p_roll',                  'default': '1.0', 'description': 'P of roll PID'},
+    {'name': 'pid_i_roll',                  'default': '1.0', 'description': 'I of roll PID'},
+    {'name': 'pid_d_roll',                  'default': '1.0', 'description': 'D of roll PID'},
+]
 
 configurable_parameters = [
     {'name': 'fcu_msp_path',                  'default': '/dev/ttyACM0', 'description': 'path to FCU MultiWii (MSP) serial'},
     {'name': 'use_mag_in_filter',                  'default': "false", 'description': 'path to FCU serial'},
-    {'name': 'rx_serial',                  'default': 'asdasd', 'description': 'path to FCU serial'},
-    {'name': 'fcu_serial',                  'default': 'asdasd', 'description': 'path to FCU serial'},
-    {'name': 'rviz',                  'default': 'false', 'description': 'path to FCU serial'},
-    {'name': 'rtabmapviz',                  'default': 'false', 'description': 'path to FCU serial'},
-    {'name': 'wait_for_transform',                  'default': '0.5', 'description': 'path to FCU serial'},
-    # {'name': 'fcu_serial',                  'default': 'asdasd', 'description': 'path to FCU serial'},
-    # {'name': 'fcu_serial',                  'default': 'asdasd', 'description': 'path to FCU serial'},
-]
+
+    # rtabmap_ros
+    {'name': 'rviz',                  'default': 'false', 'description': 'rtabmap: show rviz'},
+    {'name': 'rtabmapviz',                  'default': 'false', 'description': 'rtabmap: show rtabmapviz'},
+
+] + proxy_holder_params
 
 
 def declare_configurable_parameters(parameters):
@@ -72,20 +88,16 @@ def generate_launch_description():
                     "camera_info_topic": "/camera/color/camera_info",
                     "approx_sync": "false",
                     "frame_id": "camera_color_optical_frame",
-                    "wait_for_transform": LaunchConfiguration("wait_for_transform"),
+                    "wait_for_transform": "0.5",
                     "imu_topic": "/imu/data",
                     "wait_imu_to_init": "true",
                     "rviz":  LaunchConfiguration("rviz"),
                     "rtabmapviz": LaunchConfiguration("rtabmapviz"),
                 }.items()
             ),
-        # Node(
-        #     package='proxy_holder',
-        #     executable='proxy_holder_node',
-        #     name='proxy_holder',
-        #     parameters=[{
-        #         "rx_serial": LaunchConfiguration("rx_serial"),
-        #         "fcu_serial": LaunchConfiguration("fcu_serial"),
-        #     }]
-        # )
+        Node(
+            package='proxy_holder',
+            executable='proxy_holder_node',
+            parameters=[ { param["name"]: LaunchConfiguration(param["name"]) } for param in proxy_holder_params]
+        )
     ])

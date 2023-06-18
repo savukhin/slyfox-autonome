@@ -9,6 +9,7 @@
 #include <string>
 #include <atomic>
 #include <tuple>
+#include <map>
 
 #include "CrsfSerial.hpp"
 #include "DummyRxTx.hpp"
@@ -53,6 +54,9 @@ private:
 
   rclcpp::Subscription<_pose_type>::SharedPtr pose_sub_;
   _pose_ptr_type last_pose_;
+
+  OnSetParametersCallbackHandle::SharedPtr param_cb_hndl_;
+  std::map<std::string, std::function<void(double)>> param_funcs_;
   
   // geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr last_pose_;
 
@@ -161,6 +165,31 @@ private:
     RCLCPP_INFO(this->get_logger(), "Link down");
   }
 
+  rcl_interfaces::msg::SetParametersResult onParameterChange(const std::vector<rclcpp::Parameter> &parameters) {
+    rcl_interfaces::msg::SetParametersResult result;
+    result.successful = true;
+
+    for (const auto & parameter : parameters) {
+        const std::string name = parameter.get_name();
+      
+        auto iter = this->param_funcs_.find(name);
+        if (iter == this->param_funcs_.end()) {
+          RCLCPP_ERROR(this->get_logger(), ("No such parameter " + name).c_str());
+          continue;
+        }
+
+        if (parameter.get_type() != rclcpp::ParameterType::PARAMETER_DOUBLE) {
+        RCLCPP_ERROR(this->get_logger(), ("Parameter " + name + " must be double").c_str());
+          continue;
+      }
+
+
+        iter->second(parameter.as_double());
+    }
+
+    return result;
+  }
+
 public:
   explicit ProxyHolderNode()
       : Node("proxy_holder_node"), count_(0)
@@ -177,6 +206,16 @@ public:
     double pid_i_roll = this->declare_parameter<double>("pid_i_roll", 1.0);
     double pid_d_roll = this->declare_parameter<double>("pid_d_roll", 1.0);
 
+    this->param_funcs_["pid_p_throttle"] = [&](double val) { this->pidThrottle.setP(val); };
+    this->param_funcs_["pid_i_throttle"] = [&](double val) { this->pidThrottle.setI(val); };
+    this->param_funcs_["pid_d_throttle"] = [&](double val) { this->pidThrottle.setD(val); };
+    this->param_funcs_["pid_p_pitch"] = [&](double val) { this->pidPitch.setP(val); };
+    this->param_funcs_["pid_i_pitch"] = [&](double val) { this->pidPitch.setI(val); };
+    this->param_funcs_["pid_d_pitch"] = [&](double val) { this->pidPitch.setD(val); };
+    this->param_funcs_["pid_p_roll"] = [&](double val) { this->pidRoll.setP(val); };
+    this->param_funcs_["pid_i_roll"] = [&](double val) { this->pidRoll.setI(val); };
+    this->param_funcs_["pid_d_roll"] = [&](double val) { this->pidRoll.setD(val); };
+
     // dummy | usb
     std::string rx_serial_type = this->declare_parameter("rx_serial_type", "dummy");
     std::string rx_serial = this->declare_parameter("rx_serial", "/dev/USB0");
@@ -185,9 +224,8 @@ public:
     std::string fcu_serial = this->declare_parameter("fcu_serial", "/dev/USB1");
     uint fcu_serial_baud = this->declare_parameter<int>("fcu_serial_baud", 115200);
 
-    RCLCPP_INFO(this->get_logger(), std::string("rx_serial = " + rx_serial).c_str());
-    RCLCPP_INFO(this->get_logger(), std::string("fcu_serial = " + fcu_serial).c_str());
-
+    this->param_cb_hndl_ = add_on_set_parameters_callback(
+      std::bind(&ProxyHolderNode::onParameterChange, this, std::placeholders::_1));
 
     if (rx_serial_type != "dummy" && rx_serial_type != "usb") {
       const char* msg = "rx_serial_type type must be \"dummy\" or \"usb\"";
