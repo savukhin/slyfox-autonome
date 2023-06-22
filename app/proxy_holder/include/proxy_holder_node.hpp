@@ -56,7 +56,8 @@ private:
   _pose_ptr_type last_pose_;
 
   OnSetParametersCallbackHandle::SharedPtr param_cb_hndl_;
-  std::map<std::string, std::function<void(double)>> param_funcs_;
+  std::map<std::string, std::function<void(double)>> param_funcs_double_;
+  std::map<std::string, std::function<void(int)>> param_funcs_int_;
   
   // geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr last_pose_;
 
@@ -171,21 +172,30 @@ private:
 
     for (const auto & parameter : parameters) {
         const std::string name = parameter.get_name();
-      
-        auto iter = this->param_funcs_.find(name);
-        if (iter == this->param_funcs_.end()) {
-          RCLCPP_ERROR(this->get_logger(), ("No such parameter " + name).c_str());
-          continue;
-        }
 
-        if (parameter.get_type() != rclcpp::ParameterType::PARAMETER_DOUBLE) {
-        RCLCPP_ERROR(this->get_logger(), ("Parameter " + name + " must be double").c_str());
+
+         if (parameter.get_type() == rclcpp::ParameterType::PARAMETER_DOUBLE) {
+           auto iter = this->param_funcs_double_.find(name);
+            if (iter == this->param_funcs_double_.end()) {
+              RCLCPP_ERROR(this->get_logger(), ("No such parameter " + name).c_str());
+              continue;
+            }
+            iter->second(parameter.as_double());
+
+         } else if (parameter.get_type() == rclcpp::ParameterType::PARAMETER_INTEGER) {
+          auto iter = this->param_funcs_int_.find(name);
+            if (iter == this->param_funcs_int_.end()) {
+              RCLCPP_ERROR(this->get_logger(), ("No such parameter " + name).c_str());
+              continue;
+            }
+            iter->second(parameter.as_int());
+         } else {
+          RCLCPP_ERROR(this->get_logger(), ("Parameter " + name + " must be double or int").c_str());
           continue;
+         }
       }
 
 
-        iter->second(parameter.as_double());
-    }
 
     return result;
   }
@@ -206,15 +216,31 @@ public:
     double pid_i_roll = this->declare_parameter<double>("pid_i_roll", 1.0);
     double pid_d_roll = this->declare_parameter<double>("pid_d_roll", 1.0);
 
-    this->param_funcs_["pid_p_throttle"] = [&](double val) { this->pidThrottle.setP(val); };
-    this->param_funcs_["pid_i_throttle"] = [&](double val) { this->pidThrottle.setI(val); };
-    this->param_funcs_["pid_d_throttle"] = [&](double val) { this->pidThrottle.setD(val); };
-    this->param_funcs_["pid_p_pitch"] = [&](double val) { this->pidPitch.setP(val); };
-    this->param_funcs_["pid_i_pitch"] = [&](double val) { this->pidPitch.setI(val); };
-    this->param_funcs_["pid_d_pitch"] = [&](double val) { this->pidPitch.setD(val); };
-    this->param_funcs_["pid_p_roll"] = [&](double val) { this->pidRoll.setP(val); };
-    this->param_funcs_["pid_i_roll"] = [&](double val) { this->pidRoll.setI(val); };
-    this->param_funcs_["pid_d_roll"] = [&](double val) { this->pidRoll.setD(val); };
+    this->param_funcs_double_["pid_p_throttle"] = [&](double val) { this->pidThrottle.setP(val); };
+    this->param_funcs_double_["pid_i_throttle"] = [&](double val) { this->pidThrottle.setI(val); };
+    this->param_funcs_double_["pid_d_throttle"] = [&](double val) { this->pidThrottle.setD(val); };
+    this->param_funcs_double_["pid_p_pitch"] = [&](double val) { this->pidPitch.setP(val); };
+    this->param_funcs_double_["pid_i_pitch"] = [&](double val) { this->pidPitch.setI(val); };
+    this->param_funcs_double_["pid_d_pitch"] = [&](double val) { this->pidPitch.setD(val); };
+    this->param_funcs_double_["pid_p_roll"] = [&](double val) { this->pidRoll.setP(val); };
+    this->param_funcs_double_["pid_i_roll"] = [&](double val) { this->pidRoll.setI(val); };
+    this->param_funcs_double_["pid_d_roll"] = [&](double val) { this->pidRoll.setD(val); };
+
+    this->hold_channel_ = this->declare_parameter<int>("hold_channel", 5);
+    this->yaw_channel_ = this->declare_parameter<int>("yaw_channel", 4);
+    this->pitch_channel_ = this->declare_parameter<int>("pitch_channel", 2);
+    this->roll_channel_ = this->declare_parameter<int>("roll_channel", 1);
+    this->throttle_channel_ = this->declare_parameter<int>("throttle_channel", 3);
+
+    this->param_funcs_int_["hold_channel"] = [&](int val) { this->hold_channel_ = val; };
+    this->param_funcs_int_["yaw_channel"] = [&](int val) { this->yaw_channel_ = val; };
+    this->param_funcs_int_["pitch_channel"] = [&](int val) { this->pitch_channel_ = val; };
+    this->param_funcs_int_["roll_channel"] = [&](int val) { this->roll_channel_ = val; };
+    this->param_funcs_int_["throttle_channel"] = [&](int val) { throttle_channel_ = val; };
+
+    int transient_duration_ms = this->declare_parameter<int>("hold_transient_duration_ms", 100);
+    this->param_funcs_int_["hold_transient_duration_ms"] = [&](int val) { this->holder_.setTransientDuration(std::chrono::milliseconds(val)); };
+    this->holder_.setTransientDuration(std::chrono::milliseconds(transient_duration_ms));
 
     // dummy | usb
     std::string rx_serial_type = this->declare_parameter("rx_serial_type", "dummy");

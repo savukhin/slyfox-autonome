@@ -26,6 +26,14 @@ proxy_holder_params = [
     {'name': 'pid_p_roll',                  'default': '1.0', 'description': 'P of roll PID'},
     {'name': 'pid_i_roll',                  'default': '1.0', 'description': 'I of roll PID'},
     {'name': 'pid_d_roll',                  'default': '1.0', 'description': 'D of roll PID'},
+
+
+    {'name': 'hold_channel',                  'default': '5', 'description': 'Channel of hold'},
+    {'name': 'yaw_channel',                  'default': '4', 'description': 'Channel of hold yaw'},
+    {'name': 'pitch_channel',                  'default': '2', 'description': 'Channel of pitch'},
+    {'name': 'roll_channel',                  'default': '1', 'description': 'channel of roll'},
+    {'name': 'throttle_channel',                  'default': '3', 'description': 'Channel of throttle'},
+    {'name': 'hold_transient_duration_ms',                  'default': '100', 'description': 'Count in ms to hold change state'},
 ]
 
 configurable_parameters = [

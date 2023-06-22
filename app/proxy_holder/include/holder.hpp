@@ -58,4 +58,8 @@ public:
     geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr getHoldedPose() const { return this->holded_pose_; }
 
     bool isHold() const { return this->is_holding_; }
+
+    void setTransientDuration(std::chrono::duration<uint64_t, std::milli> transient_duration) {
+        this->transient_duration_ = transient_duration;
+    }
 };
