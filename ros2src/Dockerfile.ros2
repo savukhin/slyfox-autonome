@@ -4,7 +4,8 @@ FROM ros:humble
 RUN sudo apt-get update
 RUN sudo apt-get -y dist-upgrade
 # RUN sudo apt-get install ros-melodic-ros-tutorials
-RUN sudo apt install -y ros-humble-turtlesim & sudo apt install -y ~nros-humble-rqt*
+RUN sudo apt install -y ros-humble-turtlesim & sudo apt install -y ~nros-humble-rqt* 
+RUN sudo apt install -y ros-humble-rviz2
 
 
 RUN echo "source /opt/ros/humble/setup.bash" > ~/.bashrc
