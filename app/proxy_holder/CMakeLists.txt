@@ -77,6 +77,11 @@ install(DIRECTORY
     DESTINATION share/${PROJECT_NAME}
 )
 
+install(
+  DIRECTORY worlds urdf rviz
+  DESTINATION share/${PROJECT_NAME}
+)
+
 
 # Tell downstream packages where to find our headers
 ament_export_include_directories(include)
