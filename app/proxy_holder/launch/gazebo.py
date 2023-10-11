@@ -33,6 +33,7 @@ def generate_launch_description():
 
     # Create the launch configuration variables
     slam = LaunchConfiguration('slam')
+    gazebo_timeout = LaunchConfiguration('gazebo_timeout')
     namespace = LaunchConfiguration('namespace')
     use_namespace = LaunchConfiguration('use_namespace')
     map_yaml_file = LaunchConfiguration('map')
@@ -112,6 +113,11 @@ def generate_launch_description():
         'namespace',
         default_value='',
         description='Top-level namespace')
+    
+    declase_gazebo_timeout_cmd = DeclareLaunchArgument(
+        'gazebo_timeout',
+        default_value='30',
+        description='timeout of gazebo')
 
     declare_use_namespace_cmd = DeclareLaunchArgument(
         'use_namespace',
@@ -193,6 +199,7 @@ def generate_launch_description():
 
     declare_robot_sdf_cmd = DeclareLaunchArgument(
         'robot_sdf',
+        # default_value=os.path.join(bringup_dir, 'worlds', 'camera2.model'),
         default_value=os.path.join(bringup_dir, 'worlds', 'waffle.model'),
         description='Full path to robot sdf file to spawn the robot in gazebo')
 
@@ -232,6 +239,7 @@ def generate_launch_description():
             '-entity', robot_name,
             '-file', robot_sdf,
             '-robot_namespace', namespace,
+            '-timeout', gazebo_timeout,
             '-x', pose['x'], '-y', pose['y'], '-z', pose['z'],
             '-R', pose['R'], '-P', pose['P'], '-Y', pose['Y']])
 
@@ -298,6 +306,7 @@ def generate_launch_description():
 
     # Declare the launch options
     ld.add_action(declare_namespace_cmd)
+    ld.add_action(declase_gazebo_timeout_cmd)
     ld.add_action(declare_use_namespace_cmd)
     ld.add_action(declare_slam_cmd)
     ld.add_action(declare_map_yaml_cmd)
@@ -320,6 +329,8 @@ def generate_launch_description():
     ld.add_action(start_gazebo_server_cmd)
     ld.add_action(start_gazebo_client_cmd)
     ld.add_action(start_gazebo_spawner_cmd)
+
+    # return ld
 
 
     # ld.add_action(rtab_odom_cmd)
