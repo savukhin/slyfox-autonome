@@ -1,6 +1,28 @@
 version: "3.4"
 
 services:
+  dev-foxy:
+    build:
+        context: .
+        dockerfile: ./Dockerfile
+        # args:
+        #   USER_ID: ${USER_ID:-0}
+        #   GROUP_ID: ${GROUP_ID:-0}
+    image: syllo/ros:foxy
+    container_name: ros_foxy
+    network_mode: "host"           # access to host's network
+    stdin_open: true               # docker run -i
+    tty: true                      # docker run -t
+    environment:
+      - DISPLAY=${DISPLAY}             # Pass the display for GUI
+      - QT_X11_NO_MITSHM=1             # Needed by QT programs
+      - XAUTHORITY=/tmp/.docker.xauth
+    volumes:
+       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+       - ./proxy_holder:/home/ros/workspace/src
+      #  - ../data:/home/ros/data
+  
   dev:
     build:
         context: .

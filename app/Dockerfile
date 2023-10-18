@@ -1,4 +1,5 @@
-FROM osrf/ros:humble-desktop-full
+FROM osrf/ros:foxy-desktop
+# FROM osrf/ros:humble-desktop-full
 MAINTAINER Kevin DeMarco
 ENV DEBIAN_FRONTEND noninteractive
 SHELL ["/bin/bash", "-c"]

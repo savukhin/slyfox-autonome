@@ -2,7 +2,12 @@
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/string.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include "geometry_msgs/msg/point_stamped.hpp"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Transform.h>
+// #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+// #include <Transform.h>
+// #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <memory>
 #include <chrono>
@@ -49,6 +54,7 @@ private:
   unsigned int roll_channel_;
   unsigned int throttle_channel_;
 
+  using _point_type = geometry_msgs::msg::PointStamped;
   using _pose_type = geometry_msgs::msg::PoseWithCovarianceStamped;
   using _pose_ptr_type = geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr;
 
@@ -71,13 +77,29 @@ private:
     tf2::Vector3 pitchDir = tf2::quatRotate(fromQuat, tf2::Vector3(0, 1, 0)); // side
     tf2::Vector3 rollDir = tf2::quatRotate(fromQuat, tf2::Vector3(1, 0, 0)); // forward
 
-    tf2::Vector3 fromVector;
-    tf2::fromMsg(fromPose.position, fromVector);
+    // geometry_msgs::PointStamped ;
+    // auto header = from.get()->header;
+    
+    // _point_type point;
+    // point.header = header;
+    // point.point = fromPose.position;
 
-    tf2::Vector3 toVector;
-    tf2::fromMsg(toPose.position, toVector);
+    // tf2::Vector3 fromVector;
+    // tf2::fromMsg(point, fromVector);
+    // tf2::fromMsg(fromPose.position, fromVector);
 
-    tf2::Vector3 direction = toVector - fromVector;
+    // point.point = toPose.position;
+    // tf2::Vector3 toVector;
+    // tf2::fromMsg(point, toVector);
+    // tf2::fromMsg(toPose.position, toVector);
+
+    tf2::Transform fromTransform;
+    tf2::fromMsg(fromPose, fromTransform);
+    tf2::Transform toTransform;
+    tf2::fromMsg(toPose, toTransform);
+
+
+    tf2::Vector3 direction = toTransform.getOrigin() - fromTransform.getOrigin();
     
     // because proj(n, L) = (L * n)
     // proj(n, L) * n + L' = L; where L' - vector we seek
