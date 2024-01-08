@@ -8,6 +8,7 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 
 proxy_holder_params = [
     {'name': 'rx_serial_type',                  'default': 'usb', 'description': 'dummy or usb - type of RX serial'},
@@ -55,6 +56,55 @@ def set_configurable_parameters(parameters):
 
 
 def generate_launch_description():
+    rtabmap_launch_1 = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('rtabmap_launch'), 'launch'),
+            '/rtabmap.launch.py']),
+            launch_arguments={
+                "rtabmap_args": "--delete_db_on_start",
+                "depth_topic": "/camera/aligned_depth_to_color/image_raw",
+                "rgb_topic": "/camera/color/image_raw",
+                "camera_info_topic": "/camera/color/camera_info",
+                "approx_sync": "false",
+                "frame_id": "camera_color_optical_frame",
+                "wait_for_transform": "0.5",
+                # "imu_topic": "/imu/data",
+                # "wait_imu_to_init": "true",
+                "rviz":  LaunchConfiguration("rviz"),
+                "rtabmapviz": LaunchConfiguration("rtabmapviz"),
+            }.items()
+        )
+    
+    rtabmap_launch_2 = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('rtabmap_launch'), 'launch'),
+            '/rtabmap.launch.py']),
+            launch_arguments={
+                "rtabmap_args": "--delete_db_on_start",
+                "depth_topic": "/depth_camera_controller/depth/image_raw",
+                "rgb_topic": "/depth_camera_controller/image_raw",
+                "camera_info_topic": "/depth_camera_controller/camera_info",
+                "approx_sync": "false",
+                "frame_id": "base_footprint",
+                'odom_frame_id': 'odom',
+                'map_frame_id': 'map',
+                "wait_for_transform": "0.5",
+                "imu_topic": "/imu",
+                "wait_imu_to_init": "true",
+                "rviz":  "true",
+                "rtabmapviz": "true",
+            }.items()
+        )
+    
+    foxglove_bridge_launch = IncludeLaunchDescription(
+        XMLLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('foxglove_bridge'), 'launch'),
+            '/foxglove_bridge_launch.xml']),
+            launch_arguments={
+                "port": "8765"
+            }.items()
+        )
+
     return LaunchDescription(declare_configurable_parameters(configurable_parameters) + [
         # Node(
         #     package='multiwii_node',
@@ -85,24 +135,8 @@ def generate_launch_description():
                 '/rs_launch.py']),
                 launch_arguments={'align_depth.enable': "true"}.items()
             ),
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource([os.path.join(
-        #         get_package_share_directory('rtabmap_launch'), 'launch'),
-        #         '/rtabmap.launch.py']),
-        #         launch_arguments={
-        #             "rtabmap_args": "--delete_db_on_start",
-        #             "depth_topic": "/camera/aligned_depth_to_color/image_raw",
-        #             "rgb_topic": "/camera/color/image_raw",
-        #             "camera_info_topic": "/camera/color/camera_info",
-        #             "approx_sync": "false",
-        #             "frame_id": "camera_color_optical_frame",
-        #             "wait_for_transform": "0.5",
-        #             # "imu_topic": "/imu/data",
-        #             # "wait_imu_to_init": "true",
-        #             "rviz":  LaunchConfiguration("rviz"),
-        #             "rtabmapviz": LaunchConfiguration("rtabmapviz"),
-        #         }.items()
-        #     ),
+        rtabmap_launch_1,
+        foxglove_bridge_launch,
         # Node(
         #     package='proxy_holder',
         #     executable='proxy_holder_node',

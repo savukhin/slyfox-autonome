@@ -1,4 +1,4 @@
-FROM osrf/ros:foxy-desktop
+FROM osrf/ros:galactic-desktop
 # FROM osrf/ros:humble-desktop-full
 MAINTAINER Kevin DeMarco
 ENV DEBIAN_FRONTEND noninteractive

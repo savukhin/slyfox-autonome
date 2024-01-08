@@ -22,6 +22,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 
@@ -90,6 +91,7 @@ def generate_launch_description():
     rtab_launch_cmd = IncludeLaunchDescription(
             PythonLaunchDescriptionSource([os.path.join(
                 get_package_share_directory('rtabmap_launch'), 'launch'),
+                # get_package_share_directory('rtabmap_ros'), 'launch'),
                 '/rtabmap.launch.py']),
                 launch_arguments={
                     "rtabmap_args": "--delete_db_on_start",
@@ -107,6 +109,15 @@ def generate_launch_description():
                     "rtabmapviz": "true",
                 }.items()
             )
+    
+    foxglove_bridge_launch = IncludeLaunchDescription(
+        XMLLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('foxglove_bridge'), 'launch'),
+            '/foxglove_bridge_launch.xml']),
+            launch_arguments={
+                "port": "8765"
+            }.items()
+        )
 
     # Declare the launch arguments
     declare_namespace_cmd = DeclareLaunchArgument(
@@ -337,6 +348,8 @@ def generate_launch_description():
     # ld.add_action(rtab_slam_cmd)
     # ld.add_action(rtab_odom_viz)
     ld.add_action(rtab_launch_cmd)
+
+    ld.add_action(foxglove_bridge_launch)
     
     # ld.add_action(pointcloud_to_lasercan_cmd)
 

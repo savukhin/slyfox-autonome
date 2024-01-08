@@ -8,8 +8,8 @@ services:
         # args:
         #   USER_ID: ${USER_ID:-0}
         #   GROUP_ID: ${GROUP_ID:-0}
-    image: syllo/ros:foxy
-    container_name: ros_foxy
+    image: syllo/ros:galactic
+    container_name: ros_galactic
     network_mode: "host"           # access to host's network
     stdin_open: true               # docker run -i
     tty: true                      # docker run -t
